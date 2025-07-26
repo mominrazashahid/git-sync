@@ -1,5 +1,118 @@
 <div class="auth-container">
-  <button (click)="connectToGitHub()" class="github-btn">
-    Connect to GitHub
-  </button>
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-card">
+      <div class="loading-content">
+        <div class="loading-spinner">
+          <mat-spinner diameter="60"></mat-spinner>
+        </div>
+        <h2 class="loading-title">Checking Connection Status</h2>
+        <p class="loading-subtitle">Please wait while we verify your GitHub integration...</p>
+        
+        <!-- Skeleton Loading -->
+        <div class="skeleton-content">
+          <div class="skeleton-line long"></div>
+          <div class="skeleton-line medium"></div>
+          <div class="skeleton-line short"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connected State -->
+  <div *ngIf="!isLoading && isConnected" class="connection-status fade-in">
+    <mat-card class="status-card connected">
+      <div class="card-background"></div>
+      <mat-card-header>
+        <div mat-card-avatar class="success-avatar pulse">
+          <mat-icon class="success-icon">check_circle</mat-icon>
+        </div>
+        <mat-card-title class="title-connected">GitHub Connected</mat-card-title>
+        <mat-card-subtitle class="subtitle-success">Successfully connected to GitHub</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="user-info" *ngIf="userData">
+          <div class="info-row slide-in" style="animation-delay: 0.1s">
+            <div class="icon-container">
+              <mat-icon>person</mat-icon>
+            </div>
+            <div class="info-content">
+              <span class="info-label">Name</span>
+              <span class="info-value">{{ userData.name || userData.username }}</span>
+            </div>
+          </div>
+          <div class="info-row slide-in" style="animation-delay: 0.2s">
+            <div class="icon-container">
+              <mat-icon>alternate_email</mat-icon>
+            </div>
+            <div class="info-content">
+              <span class="info-label">GitHub ID</span>
+              <span class="info-value">{{ userData.githubId }}</span>
+            </div>
+          </div>
+          <div class="info-row slide-in" style="animation-delay: 0.3s">
+            <div class="icon-container">
+              <mat-icon>schedule</mat-icon>
+            </div>
+            <div class="info-content">
+              <span class="info-label">Connected</span>
+              <span class="info-value">{{ connectionDate }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+      
+      <mat-card-actions>
+        <button mat-raised-button color="warn" (click)="disconnect()" class="disconnect-btn">
+          <mat-icon>logout</mat-icon>
+          Disconnect
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Disconnected State -->
+  <div *ngIf="!isLoading && !isConnected" class="connection-status fade-in">
+    <mat-card class="status-card disconnected">
+      <div class="card-background-warning"></div>
+      <mat-card-header>
+        <div mat-card-avatar class="warning-avatar">
+          <mat-icon class="warning-icon">link_off</mat-icon>
+        </div>
+        <mat-card-title class="title-disconnected">GitHub Not Connected</mat-card-title>
+        <mat-card-subtitle class="subtitle-warning">Connect your GitHub account to sync data</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="connection-benefits">
+          <div class="benefit-item slide-in" style="animation-delay: 0.1s">
+            <mat-icon>sync</mat-icon>
+            <span>Sync repositories and commits</span>
+          </div>
+          <div class="benefit-item slide-in" style="animation-delay: 0.2s">
+            <mat-icon>analytics</mat-icon>
+            <span>Track issues and pull requests</span>
+          </div>
+          <div class="benefit-item slide-in" style="animation-delay: 0.3s">
+            <mat-icon>security</mat-icon>
+            <span>Secure OAuth integration</span>
+          </div>
+        </div>
+      </mat-card-content>
+      
+      <mat-card-actions>
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="connectToGitHub()" 
+          class="github-btn"
+          [disabled]="isConnecting">
+          <mat-spinner *ngIf="isConnecting" diameter="20"></mat-spinner>
+          <mat-icon *ngIf="!isConnecting">link</mat-icon>
+          {{ isConnecting ? 'Connecting...' : 'Connect to GitHub' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
 </div>

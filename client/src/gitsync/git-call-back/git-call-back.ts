@@ -1,35 +1,69 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GitService } from '../git.service';
+import { AuthService } from '../../app/auth.service';
+import { SharedModule } from '../../app/shared.module';
 
 @Component({
   selector: 'app-git-call-back',
   templateUrl: './git-call-back.html',
   styleUrl: './git-call-back.scss',
-  providers: [GitService]
+  imports: [SharedModule],
+  providers: [AuthService]
 })
-export class GitCallBackComponent {
+export class GitCallBackComponent implements OnInit {
+  isLoading = true;
+  loadingMessage = 'Connecting to GitHub...';
+  progressSteps = [
+    'Verifying authorization code',
+    'Exchanging tokens',
+    'Fetching user data',
+    'Setting up your account',
+    'Redirecting to dashboard'
+  ];
+  currentStep = 0;
     constructor(
     private route: ActivatedRoute,
-    private readonly gitService: GitService,
-    private readonly router: Router
+    private readonly authService: AuthService,
+    public readonly router: Router
   ) {}
 
-   ngOnInit(): void {
+  ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       const code = params['code'];
       if (code) {
-        this.gitService.sendGithubCode(code).subscribe((res) => {
+        this.simulateProgress();
+        this.authService.sendGithubCode(code).subscribe((res) => {
           if(res.data && res.data.accessToken){
-            this.gitService.setAuthToken(res.data.accessToken);
-            this.gitService.setUserData(res.data.user);
-            this.router.navigate(['/data']);
+            this.authService.setAuthToken(res.data.accessToken);
+            this.authService.setUserData(res.data.user);
+            // Store connection date
+            localStorage.setItem('connectionDate', new Date().toISOString());
+            
+            // Complete the progress and redirect
+            this.currentStep = this.progressSteps.length - 1;
+            setTimeout(() => {
+              this.router.navigate(['/data']);
+            }, 1000);
           }
+        }, (error) => {
+          this.loadingMessage = 'Connection failed. Please try again.';
+          this.isLoading = false;
         });
       } else {
-        console.error('GitHub code not found in query params');
+        this.loadingMessage = 'Authorization code not found. Please try again.';
+        this.isLoading = false;
       }
     });
+  }
+
+  simulateProgress() {
+    const interval = setInterval(() => {
+      if (this.currentStep < this.progressSteps.length - 2) {
+        this.currentStep++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 800);
   }
 
  

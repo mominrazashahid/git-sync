@@ -1,7 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
 
 // Angular Material Theme
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
+@import '@angular/material/prebuilt-themes/deeppurple-amber.css';
+
+// Alternative themes you can try:
+// @import '@angular/material/prebuilt-themes/indigo-pink.css';
+// @import '@angular/material/prebuilt-themes/pink-bluegrey.css';
+// @import '@angular/material/prebuilt-themes/purple-green.css';
 
 // AG Grid Theme - Using legacy for compatibility
 @import 'ag-grid-community/styles/ag-grid.css';
@@ -20,4 +25,20 @@ body {
 
 html, body {
   height: 100%;
+}
+
+// Custom toast notification styles
+.success-snackbar {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+.error-snackbar {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+.warning-snackbar {
+  background-color: #ff9800 !important;
+  color: white !important;
 }

@@ -35,6 +35,7 @@
             <input matInput [formControl]="searchControl" placeholder="Search records...">
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
+            <button  (click)="deleteRow()" class="del-btn" matButton="filled">Delete Row</button>
         
         </div>
       </mat-card-content>
@@ -61,8 +62,8 @@
             [rowData]="rowData"
             [columnDefs]="columnDefs"
             [animateRows]="true"
+            [rowSelection]="rowSelection"
             [suppressRowClickSelection]="true"
-            [rowSelection]="'single'"
             [defaultColDef]="{
               sortable: true,
               filter: true,

@@ -1,50 +1,32 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import {
   ColDef,
   GridReadyEvent,
   ModuleRegistry,
   AllCommunityModule,
+  RowSelectionOptions,
+  GridApi,
 } from 'ag-grid-community';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { GitService } from '../git.service';
+import { SharedModule } from '../../app/shared.module';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
-import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { AgGridModule } from 'ag-grid-angular';
 
 @Component({
   selector: 'app-data-viewer',
   templateUrl: './data-viewer.component.html',
   styleUrls: ['./data-viewer.component.scss'],
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatPaginatorModule,
-    AgGridModule,
-    ReactiveFormsModule,
-  ],
+  imports: [SharedModule],
 })
 export class DataViewerComponent implements OnInit {
   // Form Controls
   integrationControl = new FormControl('github');
-  entityControl = new FormControl(''); // For API collection parameter
-  processEntityControl = new FormControl('commits'); // For local data filtering/display
+  entityControl = new FormControl(''); 
+  processEntityControl = new FormControl('commits');
   searchControl = new FormControl('');
 
   // Dropdown Options
@@ -68,10 +50,14 @@ export class DataViewerComponent implements OnInit {
   ];
 
   // AG Grid
+  private gridApi!: GridApi;
   rowData: any[] = [];
   allApiData: any = {}; // Store all API response data
   columnDefs: ColDef[] = [];
   loading = false;
+   rowSelection: RowSelectionOptions | "single" | "multiple" = {
+    mode: "singleRow",
+  };
 
   // Pagination
   currentPage = 1;
@@ -79,7 +65,11 @@ export class DataViewerComponent implements OnInit {
   totalRecords = 0;
   totalPages = 0;
 
-  constructor(private gitService: GitService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private gitService: GitService, 
+    private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit() {
     this.setupColumnDefs();
@@ -95,14 +85,56 @@ export class DataViewerComponent implements OnInit {
 
     // Listen to process entity changes (local data filtering)
     this.processEntityControl.valueChanges.subscribe((value) => {
-      console.log('Process entity changed to:', value);
       this.setupColumnDefs();
       this.filterAndDisplayData();
     });
   }
 
+  deleteRow(){
+    if(!this.gridApi){
+      this.snackBar.open('Grid API not available', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    const selectedData = this.gridApi.getSelectedRows();
+    
+    if(selectedData.length === 0){
+      this.snackBar.open('No row selected for deletion', 'Close', {
+        duration: 3000,
+        panelClass: ['warning-snackbar']
+      });
+      return;
+    }
+
+    // Remove selected rows from the grid
+    this.gridApi.applyTransaction({ remove: selectedData });
+    
+    // Update the row data array
+    this.rowData = this.rowData.filter(row => 
+      !selectedData.some(selected => selected === row)
+    );
+    
+    // Show success message
+    this.snackBar.open(
+      `${selectedData.length} row(s) deleted successfully`, 
+      'Close', 
+      {
+        duration: 3000,
+        panelClass: ['success-snackbar']
+      }
+    );
+    
+    this.cdr.detectChanges();
+  }
+
   onGridReady(_event: GridReadyEvent) {
-    // Grid ready - can add future functionality here if needed
+   this.gridApi = _event.api;
+  
+
+
   }
 
   setupSearchDebounce() {
@@ -114,276 +146,25 @@ export class DataViewerComponent implements OnInit {
       });
   }
 
+  isDisabledDelBtn(){
+    if(!this.gridApi){
+      return true;
+    }
+    
+    const selectedData = this.gridApi.getSelectedRows();
+    return selectedData.length === 0;
+  }
+
   setupColumnDefs() {
     const processEntity = this.processEntityControl.value;
-
-    switch (processEntity) {
-      case 'orgs':
-        this.columnDefs = [
-          {
-            field: 'login',
-            headerName: 'Login',
-            sortable: true,
-            filter: true,
-            flex: 1,
-          },
-          {
-            field: 'description',
-            headerName: 'Description',
-            sortable: true,
-            filter: true,
-            flex: 2,
-          },
-          {
-            field: 'url',
-            headerName: 'URL',
-            sortable: true,
-            filter: true,
-            flex: 1,
-          },
-          {
-            field: 'id',
-            headerName: 'ID',
-            sortable: true,
-            filter: true,
-            width: 100,
-          },
-        ];
-        break;
-
-      case 'repos':
-        this.columnDefs = [
-          {
-            field: 'name',
-            headerName: 'Name',
-            sortable: true,
-            filter: true,
-            flex: 1,
-          },
-          {
-            field: 'full_name',
-            headerName: 'Full Name',
-            sortable: true,
-            filter: true,
-            flex: 1,
-          },
-          {
-            field: 'description',
-            headerName: 'Description',
-            sortable: true,
-            filter: true,
-            flex: 2,
-          },
-          {
-            field: 'language',
-            headerName: 'Language',
-            sortable: true,
-            filter: true,
-            width: 120,
-          },
-          {
-            field: 'stargazers_count',
-            headerName: 'Stars',
-            sortable: true,
-            filter: true,
-            width: 100,
-          },
-          {
-            field: 'forks_count',
-            headerName: 'Forks',
-            sortable: true,
-            filter: true,
-            width: 100,
-          },
-          {
-            field: 'private',
-            headerName: 'Private',
-            sortable: true,
-            filter: true,
-            width: 100,
-          },
-        ];
-        break;
-
-      case 'commits':
-        this.columnDefs = [
-          {
-            field: 'sha',
-            headerName: 'SHA',
-            sortable: true,
-            filter: true,
-            width: 150,
-          },
-          {
-            field: 'message',
-            headerName: 'Message',
-            sortable: true,
-            filter: true,
-            flex: 2,
-          },
-          {
-            field: 'author.name',
-            headerName: 'Author',
-            sortable: true,
-            filter: true,
-            flex: 1,
-          },
-          {
-            field: 'author.email',
-            headerName: 'Author Email',
-            sortable: true,
-            filter: true,
-            flex: 1,
-          },
-          {
-            field: 'author.date',
-            headerName: 'Date',
-            sortable: true,
-            filter: true,
-            width: 150,
-            valueFormatter: (params: any) =>
-              params.value ? new Date(params.value).toLocaleDateString() : '',
-          },
-          {
-            field: 'repo_name',
-            headerName: 'Repository',
-            sortable: true,
-            filter: true,
-            flex: 1,
-          },
-          {
-            field: 'org_login',
-            headerName: 'Organization',
-            sortable: true,
-            filter: true,
-            flex: 1,
-          },
-        ];
-        break;
-
-      case 'issues':
-        this.columnDefs = [
-          {
-            field: 'number',
-            headerName: '#',
-            sortable: true,
-            filter: true,
-            width: 80,
-          },
-          {
-            field: 'title',
-            headerName: 'Title',
-            sortable: true,
-            filter: true,
-            flex: 2,
-          },
-          {
-            field: 'state',
-            headerName: 'State',
-            sortable: true,
-            filter: true,
-            width: 100,
-          },
-          {
-            field: 'user.login',
-            headerName: 'Created By',
-            sortable: true,
-            filter: true,
-            flex: 1,
-          },
-          {
-            field: 'created_at',
-            headerName: 'Created',
-            sortable: true,
-            filter: true,
-            width: 150,
-            valueFormatter: (params: any) =>
-              params.value ? new Date(params.value).toLocaleDateString() : '',
-          },
-          {
-            field: 'comments',
-            headerName: 'Comments',
-            sortable: true,
-            filter: true,
-            width: 100,
-          },
-        ];
-        break;
-
-      case 'pulls':
-        this.columnDefs = [
-          {
-            field: 'number',
-            headerName: '#',
-            sortable: true,
-            filter: true,
-            width: 80,
-          },
-          {
-            field: 'title',
-            headerName: 'Title',
-            sortable: true,
-            filter: true,
-            flex: 2,
-          },
-          {
-            field: 'state',
-            headerName: 'State',
-            sortable: true,
-            filter: true,
-            width: 100,
-          },
-          {
-            field: 'user.login',
-            headerName: 'Created By',
-            sortable: true,
-            filter: true,
-            flex: 1,
-          },
-          {
-            field: 'created_at',
-            headerName: 'Created',
-            sortable: true,
-            filter: true,
-            width: 150,
-            valueFormatter: (params: any) =>
-              params.value ? new Date(params.value).toLocaleDateString() : '',
-          },
-          {
-            field: 'merged',
-            headerName: 'Merged',
-            sortable: true,
-            filter: true,
-            width: 100,
-            valueFormatter: (params: any) => (params.value ? 'Yes' : 'No'),
-          },
-          {
-            field: 'repo_name',
-            headerName: 'Repository',
-            sortable: true,
-            filter: true,
-            flex: 1,
-          },
-        ];
-        break;
-
-      default:
-        this.columnDefs = [];
+    if (processEntity) {
+      this.columnDefs = this.gitService.setupColumnDefs(processEntity);
     }
   }
 
   loadData() {
     const entity = this.entityControl.value;
     const search = this.searchControl.value;
-
-    console.log(
-      'Loading data for entity:',
-      entity,
-      'search:',
-      search,
-      'page:',
-      this.currentPage
-    );
     this.loading = true;
 
     this.gitService

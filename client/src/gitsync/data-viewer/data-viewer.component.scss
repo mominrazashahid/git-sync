@@ -2,18 +2,24 @@
   padding: 20px;
   background-color: #f5f5f5;
   min-height: 100vh;
+   height: 100vh;
 }
 
 .header-controls {
   margin-bottom: 20px;
 }
 
+.del-btn{
+  color: black !important;
+  background-color: orange !important;
+  height: 50px !important;
+}
+
 .controls-card {
   .controls-row {
     display: flex;
     gap: 16px;
-    align-items: flex-end;
-    flex-wrap: wrap;
+    align-items:first baseline;
 
     @media (max-width: 768px) {
       flex-direction: column;

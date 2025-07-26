@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
-import { GitService } from './git.service';
+import { AuthService } from '../app/auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -8,14 +8,14 @@ import { GitService } from './git.service';
 export class AuthGuard implements CanActivate {
 
   constructor(
-    private gitService: GitService,
+    private authService: AuthService,
     private router: Router
   ) {}
 
   canActivate(
   ): boolean {
-    // Check if user is authenticated (token exists in localStorage)
-    if (this.gitService.isAuthenticated()) {
+    // Check if user is authenticated 
+    if (this.authService.isAuthenticated()) {
       return true;
     }
     

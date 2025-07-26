@@ -7,15 +7,10 @@ import { map, catchError } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class GitService {
-  private backendUrl = '/api/github/callback';
   private dataUrl = '/api/github/data';
 
   constructor(private http: HttpClient) {}
 
-  sendGithubCode(code: string): Observable<any> {
-    const url = `${this.backendUrl}?code=${code}`;
-    return this.http.get(url);
-  }
 
   getGithubData(collection: string | undefined, page: number = 1, limit: number = 10, search: string = ''): Observable<any> {
     let params = new HttpParams()
@@ -47,24 +42,264 @@ export class GitService {
   }
 
 
-  // Method to store token after successful authentication
-  setAuthToken(token: string): void {
-    localStorage.setItem('authToken', token);
+  setupColumnDefs(processEntity: string){
+    let columnDefs:any[] = [];
+     switch (processEntity) {
+      case 'orgs':
+        columnDefs = [
+          {
+            field: 'login',
+            headerName: 'Login',
+            sortable: true,
+            filter: true,
+            flex: 1,
+          },
+          {
+            field: 'description',
+            headerName: 'Description',
+            sortable: true,
+            filter: true,
+            flex: 2,
+          },
+          {
+            field: 'url',
+            headerName: 'URL',
+            sortable: true,
+            filter: true,
+            flex: 1,
+          },
+          {
+            field: 'id',
+            headerName: 'ID',
+            sortable: true,
+            filter: true,
+            width: 100,
+          },
+        ];
+        break;
+
+      case 'repos':
+        columnDefs = [
+          {
+            field: 'name',
+            headerName: 'Name',
+            sortable: true,
+            filter: true,
+            flex: 1,
+          },
+          {
+            field: 'full_name',
+            headerName: 'Full Name',
+            sortable: true,
+            filter: true,
+            flex: 1,
+          },
+          {
+            field: 'description',
+            headerName: 'Description',
+            sortable: true,
+            filter: true,
+            flex: 2,
+          },
+          {
+            field: 'language',
+            headerName: 'Language',
+            sortable: true,
+            filter: true,
+            width: 120,
+          },
+          {
+            field: 'stargazers_count',
+            headerName: 'Stars',
+            sortable: true,
+            filter: true,
+            width: 100,
+          },
+          {
+            field: 'forks_count',
+            headerName: 'Forks',
+            sortable: true,
+            filter: true,
+            width: 100,
+          },
+          {
+            field: 'private',
+            headerName: 'Private',
+            sortable: true,
+            filter: true,
+            width: 100,
+          },
+        ];
+        break;
+
+      case 'commits':
+        columnDefs = [
+          {
+            field: 'sha',
+            headerName: 'SHA',
+            sortable: true,
+            filter: true,
+            width: 150,
+          },
+          {
+            field: 'message',
+            headerName: 'Message',
+            sortable: true,
+            filter: true,
+            flex: 2,
+          },
+          {
+            field: 'author.name',
+            headerName: 'Author',
+            sortable: true,
+            filter: true,
+            flex: 1,
+          },
+          {
+            field: 'author.email',
+            headerName: 'Author Email',
+            sortable: true,
+            filter: true,
+            flex: 1,
+          },
+          {
+            field: 'author.date',
+            headerName: 'Date',
+            sortable: true,
+            filter: true,
+            width: 150,
+            valueFormatter: (params: any) =>
+              params.value ? new Date(params.value).toLocaleDateString() : '',
+          },
+          {
+            field: 'repo_name',
+            headerName: 'Repository',
+            sortable: true,
+            filter: true,
+            flex: 1,
+          },
+          {
+            field: 'org_login',
+            headerName: 'Organization',
+            sortable: true,
+            filter: true,
+            flex: 1,
+          },
+        ];
+        break;
+
+      case 'issues':
+        columnDefs = [
+          {
+            field: 'number',
+            headerName: '#',
+            sortable: true,
+            filter: true,
+            width: 80,
+          },
+          {
+            field: 'title',
+            headerName: 'Title',
+            sortable: true,
+            filter: true,
+            flex: 2,
+          },
+          {
+            field: 'state',
+            headerName: 'State',
+            sortable: true,
+            filter: true,
+            width: 100,
+          },
+          {
+            field: 'user.login',
+            headerName: 'Created By',
+            sortable: true,
+            filter: true,
+            flex: 1,
+          },
+          {
+            field: 'created_at',
+            headerName: 'Created',
+            sortable: true,
+            filter: true,
+            width: 150,
+            valueFormatter: (params: any) =>
+              params.value ? new Date(params.value).toLocaleDateString() : '',
+          },
+          {
+            field: 'comments',
+            headerName: 'Comments',
+            sortable: true,
+            filter: true,
+            width: 100,
+          },
+        ];
+        break;
+
+      case 'pulls':
+        columnDefs = [
+          {
+            field: 'number',
+            headerName: '#',
+            sortable: true,
+            filter: true,
+            width: 80,
+          },
+          {
+            field: 'title',
+            headerName: 'Title',
+            sortable: true,
+            filter: true,
+            flex: 2,
+          },
+          {
+            field: 'state',
+            headerName: 'State',
+            sortable: true,
+            filter: true,
+            width: 100,
+          },
+          {
+            field: 'user.login',
+            headerName: 'Created By',
+            sortable: true,
+            filter: true,
+            flex: 1,
+          },
+          {
+            field: 'created_at',
+            headerName: 'Created',
+            sortable: true,
+            filter: true,
+            width: 150,
+            valueFormatter: (params: any) =>
+              params.value ? new Date(params.value).toLocaleDateString() : '',
+          },
+          {
+            field: 'merged',
+            headerName: 'Merged',
+            sortable: true,
+            filter: true,
+            width: 100,
+            valueFormatter: (params: any) => (params.value ? 'Yes' : 'No'),
+          },
+          {
+            field: 'repo_name',
+            headerName: 'Repository',
+            sortable: true,
+            filter: true,
+            flex: 1,
+          },
+        ];
+        break;
+
+      default:
+        columnDefs = [];
+    }
+
+    return columnDefs;
   }
 
-  // Method to store user data
-  setUserData(userData: any): void {
-    localStorage.setItem('user', JSON.stringify(userData));
-  }
 
-  // Method to remove token on logout
-  clearAuthToken(): void {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-  }
-
-  // Method to check if user is authenticated
-  isAuthenticated(): boolean {
-    return !!localStorage.getItem('authToken');
-  }
 }

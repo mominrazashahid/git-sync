@@ -1,3 +1,84 @@
 <div class="callback-container">
-  <p>Logging you in via GitHub...</p>
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-wrapper">
+    <div class="loading-card">
+      <!-- GitHub Logo Animation -->
+      <div class="github-logo-container">
+        <div class="github-logo">
+          <mat-icon class="github-icon rotating">code</mat-icon>
+        </div>
+        <div class="connection-line"></div>
+        <div class="app-logo">
+          <mat-icon class="app-icon pulsing">sync</mat-icon>
+        </div>
+      </div>
+
+      <!-- Main Loading Content -->
+      <div class="loading-content">
+        <h1 class="loading-title">{{ loadingMessage }}</h1>
+        <p class="loading-subtitle">Please wait while we securely connect your GitHub account</p>
+
+        <!-- Progress Spinner -->
+        <div class="spinner-container">
+          <mat-spinner diameter="60" strokeWidth="4"></mat-spinner>
+          <div class="spinner-overlay">
+            <mat-icon class="center-icon">check</mat-icon>
+          </div>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+          <div 
+            *ngFor="let step of progressSteps; let i = index" 
+            class="step-item"
+            [class.active]="i === currentStep"
+            [class.completed]="i < currentStep"
+            [style.animation-delay]="(i * 0.2) + 's'">
+            
+            <div class="step-indicator">
+              <mat-icon *ngIf="i < currentStep" class="step-check">check</mat-icon>
+              <mat-spinner *ngIf="i === currentStep" diameter="24" strokeWidth="3"></mat-spinner>
+              <div *ngIf="i > currentStep" class="step-dot"></div>
+            </div>
+            
+            <span class="step-text">{{ step }}</span>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar-container">
+          <div class="progress-bar">
+            <div 
+              class="progress-fill" 
+              [style.width]="((currentStep + 1) / progressSteps.length * 100) + '%'">
+            </div>
+          </div>
+          <span class="progress-text">{{ currentStep + 1 }} of {{ progressSteps.length }}</span>
+        </div>
+      </div>
+
+      <!-- Decorative Elements -->
+      <div class="floating-icons">
+        <mat-icon class="floating-icon" style="animation-delay: 0s;">cloud</mat-icon>
+        <mat-icon class="floating-icon" style="animation-delay: 1s;">security</mat-icon>
+        <mat-icon class="floating-icon" style="animation-delay: 2s;">link</mat-icon>
+        <mat-icon class="floating-icon" style="animation-delay: 3s;">verified</mat-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading" class="error-wrapper">
+    <mat-card class="error-card">
+      <div class="error-content">
+        <mat-icon class="error-icon">error_outline</mat-icon>
+        <h2 class="error-title">Connection Error</h2>
+        <p class="error-message">{{ loadingMessage }}</p>
+        <button mat-raised-button color="primary" (click)="router.navigate(['/auth'])">
+          <mat-icon>refresh</mat-icon>
+          Try Again
+        </button>
+      </div>
+    </mat-card>
+  </div>
 </div>
