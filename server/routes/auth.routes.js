@@ -2,13 +2,6 @@ const express = require("express");
 const passport = require('passport');
 const router = express.Router();
 const { 
-  getOrganizations,
-  getRepos,
-  getCommits,
-  getPulls,
-  getIssues,
-  getIssueEvents,
-  getOrgMembers,
   createUser
 } = require("../controllers/auth.controller");
 

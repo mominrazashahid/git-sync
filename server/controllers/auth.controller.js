@@ -2,6 +2,7 @@ const axios = require('axios');
 const User = require("../models/user.model");
 const GithubIntegration = require("../models/githubIntegration.model");
 const {syncUserData} = require("../services/github.sync.service");
+const {createGitHubJWT} = require("../utills/utils");
 
 
 exports.createUser = async (req, res) => {
@@ -38,7 +39,13 @@ exports.createUser = async (req, res) => {
 
     
     syncUserData({  user_id: user._id ,accessToken:profile.accessToken});
+    const payload = {
+        accessToken: profile.accessToken,
+        email: user.username,
+        name: user.name
+    }
 
-
-    return res.json({ message: 'Authenticated', data: { user,  accessToken: profile.accessToken} });
+    const tokken = createGitHubJWT(payload);
+    console.log(tokken,'tokken');
+    return res.json({ message: 'Authenticated', data: { user,  accessToken: tokken} });
 }
