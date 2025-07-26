@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GitService } from '../git.service';
 
 @Component({
@@ -11,7 +11,8 @@ import { GitService } from '../git.service';
 export class GitCallBackComponent {
     constructor(
     private route: ActivatedRoute,
-    private readonly gitService: GitService
+    private readonly gitService: GitService,
+    private readonly router: Router
   ) {}
 
    ngOnInit(): void {
@@ -19,11 +20,10 @@ export class GitCallBackComponent {
       const code = params['code'];
       if (code) {
         this.gitService.sendGithubCode(code).subscribe((res) => {
-          console.log(res.data,'Data>>>>>>>>>>>>>');
           if(res.data && res.data.accessToken){
-            localStorage.setItem('Authtoken', res.data.accessToken);
-            localStorage.setItem('user', res.data.user);
-
+            this.gitService.setAuthToken(res.data.accessToken);
+            this.gitService.setUserData(res.data.user);
+            this.router.navigate(['/data']);
           }
         });
       } else {

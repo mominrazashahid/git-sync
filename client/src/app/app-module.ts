@@ -6,6 +6,7 @@ import { App } from './app';
 import { GitsyncModule } from '../gitsync/gitsync-module';
 import { RouterOutlet } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 
 
@@ -18,6 +19,7 @@ import { provideHttpClient } from '@angular/common/http';
     AppRoutingModule,
     GitsyncModule,
     RouterOutlet,
+    CommonModule
   ],
   providers: [
     provideBrowserGlobalErrorListeners(),

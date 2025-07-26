@@ -1,0 +1,111 @@
+<div class="data-viewer-container">
+  <div class="header-controls">
+    <mat-card class="controls-card">
+      <mat-card-content>
+        <div class="controls-row">
+          <mat-form-field appearance="outline" class="control-field">
+            <mat-label>Active Integration</mat-label>
+            <mat-select [formControl]="integrationControl" [disabled]="true">
+              <mat-option *ngFor="let option of integrationOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="control-field">
+            <mat-label>Entity</mat-label>
+            <mat-select [formControl]="entityControl">
+              <mat-option *ngFor="let option of entityOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="control-field">
+            <mat-label>Process Entity</mat-label>
+            <mat-select [formControl]="processEntityControl">
+              <mat-option *ngFor="let option of processEntityOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="control-field search-field">
+            <mat-label>Search</mat-label>
+            <input matInput [formControl]="searchControl" placeholder="Search records...">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="table-container">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          {{ getSelectedEntityLabel() }}
+        </mat-card-title>
+        <div class="table-header-actions">
+          <mat-spinner *ngIf="loading" diameter="24"></mat-spinner>
+          <span class="record-count">{{ getPaginationInfo() }}</span>
+        </div>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="ag-grid-container">
+          <ag-grid-angular
+            class="ag-theme-material"
+            [theme]="'legacy'"
+            [rowData]="rowData"
+            [columnDefs]="columnDefs"
+            [animateRows]="true"
+            [suppressRowClickSelection]="true"
+            [rowSelection]="'single'"
+            [defaultColDef]="{
+              sortable: true,
+              filter: true,
+              resizable: true,
+              minWidth: 100
+            }"
+            [pagination]="false"
+            [suppressPaginationPanel]="true"
+            (gridReady)="onGridReady($event)">
+          </ag-grid-angular>
+        </div>
+
+        <div class="pagination-container" *ngIf="totalRecords > 0">
+          <div class="pagination-info">
+            <mat-form-field appearance="outline" class="page-size-field">
+              <mat-label>Items per page</mat-label>
+              <mat-select [value]="pageSize" (selectionChange)="onPageSizeChange($event.value)">
+                <mat-option [value]="10">10</mat-option>
+                <mat-option [value]="25">25</mat-option>
+                <mat-option [value]="50">50</mat-option>
+                <mat-option [value]="100">100</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <span class="pagination-text">{{ getPaginationInfo() }}</span>
+          </div>
+
+          <mat-paginator
+            [length]="totalRecords"
+            [pageSize]="pageSize"
+            [pageIndex]="currentPage - 1"
+            [pageSizeOptions]="[10, 25, 50, 100]"
+            [showFirstLastButtons]="true"
+            (page)="onPageChange($event.pageIndex + 1)">
+          </mat-paginator>
+        </div>
+
+        <!-- No Data Message -->
+        <div class="no-data-message" *ngIf="!loading && rowData.length === 0">
+          <mat-icon>inbox</mat-icon>
+          <h3>No data found</h3>
+          <p>Try adjusting your search criteria or select a different entity.</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

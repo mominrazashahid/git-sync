@@ -1,0 +1,23 @@
+/* You can add global styles to this file, and also import other style files */
+
+// Angular Material Theme
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+// AG Grid Theme - Using legacy for compatibility
+@import 'ag-grid-community/styles/ag-grid.css';
+@import 'ag-grid-community/styles/ag-theme-material.css';
+
+// Global styles
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, sans-serif;
+  background-color: #f5f5f5;
+}
+
+html, body {
+  height: 100%;
+}
